@@ -1,14 +1,7 @@
-/********************************************************************
- * Copyright (c) 2018
- * All rights reserved.
- *       
- * \file    dpic_lib.c
- * \brief   
- * \version 1.0
- * \author  seabeam
- * \Email   seabeam@qq.com
- * \date    2018-03-11
- ********************************************************************/
+//##################################################################################
+// Copyright 2018 seabeam@yahoo.com - Licensed under the Apache License, Version 2.0
+// For more information, see LICENCE in the main folder
+//##################################################################################
 
 #include "dpic_lib.h"
 #include "dpi/uvm_dpi.cc"
