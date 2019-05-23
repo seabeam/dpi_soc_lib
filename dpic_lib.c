@@ -7,6 +7,15 @@
 #include "dpi/uvm_dpi.cc"
 
 // Time
+char *top;
+
+void dpic_set_top(const char *path) {
+  top = (char *)calloc(strlen(path)+1, sizeof(mhpiTimeT));
+  strcpy(top, path);
+  
+  dpic_info("Set top path to %s", top);
+}
+
 double dpic_get_real_time() {
   mhpiTimeT *time = (mhpiTimeT *)calloc(1, sizeof(mhpiTimeT));
   mhpi_get_time(time);
@@ -15,8 +24,35 @@ double dpic_get_real_time() {
 }
 
 char *dpic_get_time_unit() {
-  int   tu_int = mhpi_get(mhpiTimeUnitP, NULL);
+  int   tu_int;
   char *tu_str = (char *)calloc(3, sizeof(char));
+
+  // Set default top hirearchy
+  if (top == NULL) {
+    top = (char *)calloc(3, sizeof(char));
+    top = "top";
+  }
+
+  // Check top path
+  mhpiHandleT mhpiH = mhpi_handle_by_name(top, 0);
+
+  if (mhpiH == NULL) {
+    dpic_error("Can't locate TOP hierarchy: %s", top);
+    return NULL;
+  }
+  
+  // Check top language
+  if (mhpi_get(mhpiPliP, mhpiH) == mhpiVpiPli) {
+    tu_int = vpi_get(vpiTimeUnit, vpi_handle_by_name(top, 0));
+  }
+  else if (mhpi_get(mhpiPliP, mhpiH) == mhpiVhpiPli) {
+    tu_int = vhpi_get(vhpiSimTimeUnitP, vpi_handle_by_name(top, 0));
+  }
+  else {
+    dpic_fatal("TOP %s has unknow type language", top);
+    vpi_control(vpiFinish, 0);
+    return NULL;
+  }
 
   switch (tu_int) {
     case -15:
@@ -367,6 +403,8 @@ int dpic_wait_change_value(const char *path, const int expected_value) {
 
 int dpic_get(const char *path, int *data) {
   s_vpi_vecval value;
+  value.aval = 0;
+  value.bval = 0;
 
   uvm_hdl_read(path, &value);
 
